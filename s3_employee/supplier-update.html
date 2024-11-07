@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="stylesheet" href="bootstrap.min.css" />
+		<link rel="stylesheet" href="base.css" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<script src="jquery-3.6.0.min.js"></script>
+		<script src="bootstrap.min.js"></script>
+		<title>Manage coffee suppliers</title>
+		<script>
+			$(document).ready(function () {
+				$("#nav").load("nav.html");
+				$("#supplier-form-fields").load("supplier-form-fields.html");
+			});
+		</script>
+	</head>
+	<body>
+		<script>
+			window.addEventListener("load", function () {
+				const urlParams = new URLSearchParams(window.location.search);
+				const dataId = urlParams.get("id");
+				document.getElementById("id").value = dataId;
+
+				fetch(`YOUR_API_URL/api/v1/supplier-info?id=${dataId}`)
+					.then((response) => response.json())
+					.then((data) => fillForm(data.data.data)); // 가져온 데이터로 폼 채우기
+			});
+
+			function fillForm(data) {
+				document.getElementById("name").value = data.name;
+				document.getElementById("address").value = data.address;
+				document.getElementById("city").value = data.city;
+				document.getElementById("state").value = data.state;
+				document.getElementById("email").value = data.email;
+				document.getElementById("phone").value = data.phone;
+				document.querySelector("#deleteModalName").innerHTML += `
+				            Are you sure you want to delete supplier ${data.name}?
+				          `;
+			}
+		</script>
+		<div class="container">
+			<div id="nav"></div>
+			<div class="mt-2"></div>
+			<form id="supplier-form" method="POST">
+				<input type="hidden" id="id" name="id" />
+				<div id="supplier-form-fields"></div>
+				<button id="submit-btn" type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+			</form>
+			<script>
+				function submitForm() {
+					const form = document.getElementById("supplier-form");
+					const nameInput = document.getElementById("name");
+					const addressInput = document.getElementById("address");
+					const cityInput = document.getElementById("city");
+					const stateInput = document.getElementById("state");
+					const emailInput = document.getElementById("email");
+					const phoneInput = document.getElementById("phone");
+					if (
+						!nameInput.value ||
+						!addressInput.value ||
+						!cityInput.value ||
+						!stateInput.value ||
+						!emailInput.value ||
+						!phoneInput.value
+					) {
+						alert("All fields are required");
+						return;
+					}
+					const formData = new FormData(form);
+					const urlEncodedData = new URLSearchParams(formData).toString();
+
+					fetch("YOUR_API_URL/api/v1/supplier-update", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded",
+						},
+						body: urlEncodedData,
+					})
+						.then((response) => {
+							if (!response.ok) {
+								throw new Error("Network response was not ok");
+							}
+							return response.json();
+						})
+						.then((data) => {
+							console.log("Success:", data);
+							window.location.href = "./supplier-list-all.html";
+						})
+						.catch((error) => {
+							console.error("Error:", error);
+						});
+				}
+			</script>
+
+			<!-- Button trigger modal -->
+			<button type="button" class="float-right btn btn-danger" data-toggle="modal" data-target="#exampleModal">
+				Delete this supplier
+			</button>
+
+			<!-- Modal -->
+			<div
+				class="modal fade"
+				id="exampleModal"
+				tabindex="-1"
+				role="dialog"
+				aria-labelledby="exampleModalLabel"
+				aria-hidden="true"
+			>
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Delete supplier</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body" id="deleteModalName"></div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							<form id="deleteForm" method="POST">
+								<button type="button" onclick="deleteSupplier()" class="float-right btn btn-danger">
+									Delete this supplier
+								</button>
+							</form>
+							<script>
+								function deleteSupplier() {
+									// 현재 페이지 URL에서 "id" 매개변수 가져오기
+									const urlParams = new URLSearchParams(window.location.search);
+									const id = urlParams.get("id");
+									fetch(`YOUR_API_URL/api/v1/supllier-remove/${id}`, {
+										method: "POST",
+									})
+										.then((response) => {
+											if (!response.ok) {
+												throw new Error("Network response was not ok");
+											}
+											console.log("Supplier deleted successfully");
+											window.location.href = "./supplier-list-all.html";
+										})
+										.catch((error) => {
+											console.error("Error:", error);
+											// 에러 처리
+										});
+								}
+							</script>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

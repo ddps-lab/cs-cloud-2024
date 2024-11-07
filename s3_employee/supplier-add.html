@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="stylesheet" href="bootstrap.min.css" />
+		<link rel="stylesheet" href="base.css" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<script src="jquery-3.6.0.min.js"></script>
+		<script src="bootstrap.min.js"></script>
+		<title>Manage coffee suppliers</title>
+		<script>
+			$(document).ready(function () {
+				$("#nav").load("nav.html");
+				$("#supplier-form-fields").load("supplier-form-fields.html");
+			});
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<div id="nav"></div>
+			<div class="mt-2"></div>
+			<form id="supplier-form">
+				<div id="supplier-form-fields"></div>
+				<button id="submit-btn" type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+			</form>
+			<script>
+				function submitForm() {
+					const form = document.getElementById("supplier-form");
+					const nameInput = document.getElementById("name");
+					const addressInput = document.getElementById("address");
+					const cityInput = document.getElementById("city");
+					const stateInput = document.getElementById("state");
+					const emailInput = document.getElementById("email");
+					const phoneInput = document.getElementById("phone");
+					if (
+						!nameInput.value ||
+						!addressInput.value ||
+						!cityInput.value ||
+						!stateInput.value ||
+						!emailInput.value ||
+						!phoneInput.value
+					) {
+						alert("All fields are required");
+						return;
+					}
+					const formData = new FormData(form);
+					const urlEncodedData = new URLSearchParams(formData).toString();
+
+					fetch("YOUR_API_URL/api/v1/supplier-add", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded",
+						},
+						body: urlEncodedData,
+					})
+						.then((response) => {
+							if (!response.ok) {
+								throw new Error("Network response was not ok");
+							}
+							return response.json();
+						})
+						.then((data) => {
+							console.log("Success:", data);
+							window.location.href = "./supplier-list-all.html";
+						})
+						.catch((error) => {
+							console.error("Error:", error);
+						});
+				}
+			</script>
+		</div>
+	</body>
+</html>
